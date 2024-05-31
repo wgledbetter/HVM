@@ -29,3 +29,7 @@ cuda = []
 
 [dev-dependencies]
 insta = { version = "1.39.0", features = ["glob"] }
+
+[[bin]]
+name = "mkBookBuf"
+path = "wgl/mkBookBuf.rs"
