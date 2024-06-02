@@ -5,6 +5,7 @@ use std::fs;
 fn main() {
     let cmd_matches = Command::new("mkBookBuf")
         .arg(Arg::new("hvmFile").required(true))
+        .arg(Arg::new("outFile").required(false))
         .arg_required_else_help(true)
         .get_matches();
 
@@ -20,6 +21,9 @@ fn main() {
         .replace("]", "}");
     let bookb = format!("static const u8 BOOK_BUF[] = {};", bookb);
 
-    let buffer_out_file = format!("{}_book.h", hvm_source_file);
+    let default_out_file = format!("{}_book.h", hvm_source_file);
+    let buffer_out_file = cmd_matches
+        .get_one::<String>("outFile")
+        .unwrap_or(&default_out_file);
     fs::write(buffer_out_file, bookb).expect("Failed to write output.");
 }
