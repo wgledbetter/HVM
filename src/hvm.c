@@ -549,6 +549,7 @@ static inline Port peek(Net* net, Port var) {
 
 // Finds a variable's value.
 static inline Port enter(Net* net, Port var) {
+  // printf("enter: top\n");
   // While `B` is VAR: extend it (as an optimization)
   while (get_tag(var) == VAR) {
     // Takes the current `var` substitution as `val`
@@ -850,6 +851,8 @@ static inline bool interact(Net* net, TM* tm, Book* book) {
     Port a = get_fst(redex);
     Port b = get_snd(redex);
 
+    // pretty_print_port(net,book,a);
+
     // Gets the rule type.
     Rule rule = get_rule(a, b);
 
@@ -927,6 +930,7 @@ void evaluator(Net* net, TM* tm, Book* book) {
       if (!busy) atomic_fetch_sub_explicit(&net->idle, 1, memory_order_relaxed);
       busy = TRUE;
       // Perform an interaction
+      // printf("evaluator: performing an interaction with thread %i\n", tm->tid);
       interact(net, tm, book);
     // If we have no redexes...
     } else {
@@ -998,7 +1002,9 @@ typedef struct {
 
 void* thread_func(void* arg) {
   ThreadArg* data = (ThreadArg*)arg;
+  printf("thread_func: calling evaluator on thread %i\n", data->tm->tid);
   evaluator(data->net, data->tm, data->book);
+  printf("thread_func: done with evaluator on thread %i\n", data->tm->tid);
   return NULL;
 }
 
@@ -1011,6 +1017,8 @@ void boot_redex(Net* net, Pair redex) {
 // Evaluates all redexes.
 // TODO: cache threads to avoid spawning overhead
 void normalize(Net* net, Book* book) {
+  printf("normalize: entering\n");
+
   // Inits thread_arg objects
   ThreadArg thread_arg[TPC];
   for (u32 t = 0; t < TPC; ++t) {
@@ -1022,13 +1030,17 @@ void normalize(Net* net, Book* book) {
   // Spawns the evaluation threads
   pthread_t threads[TPC];
   for (u32 t = 0; t < TPC; ++t) {
+    printf("Creating thread %i of %i\n", t, TPC);
     pthread_create(&threads[t], NULL, thread_func, &thread_arg[t]);
   }
 
   // Wait for the threads to finish
   for (u32 t = 0; t < TPC; ++t) {
+    printf("Joining thread %i of %i\n", t, TPC);
     pthread_join(threads[t], NULL);
   }
+
+  printf("normalize: exiting\n");
 }
 
 // Util: expands a REF Port.
@@ -1360,7 +1372,9 @@ void do_run_io(Net* net, Book* book, Port port) {
   // IO loop
   while (TRUE) {
     // Normalizes the net
+    printf("do_run_io: normalize(net, book)\n");
     normalize(net, book);
+    printf("do_run_io: normalize(net, book) complpte\n");
 
     // Reads the λ-Encoded Ctr
     Ctr ctr = read_ctr(net, book, peek(net, port));
@@ -1725,10 +1739,10 @@ void pretty_print_port(Net* net, Book* book, Port port) {
 
 //COMPILED_BOOK_BUF//
 
-// Main
-// ----
+// Main ------------------------------------------------------------------------
 
 void hvm_c(u32* book_buffer) {
+  printf("hvm_c start\n");
   // Creates static TMs
   alloc_static_tms();
 
@@ -1751,7 +1765,9 @@ void hvm_c(u32* book_buffer) {
   boot_redex(net, new_pair(new_port(REF, 0), ROOT));
 
   // Normalizes and runs IO
+  printf("hvm_c: do_run_io\n");
   do_run_io(net, book, ROOT);
+  printf("hvm_c: do_run_io complete\n");
 
   // Prints the result
   printf("Result: ");
