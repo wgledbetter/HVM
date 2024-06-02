@@ -1,0 +1,6 @@
+// Cons-> <-Cons
+
+@main = x
+  & @expr ~ (1.45 x)
+
+@expr = (tits (1 tits))

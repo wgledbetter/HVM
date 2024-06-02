@@ -1,0 +1,10 @@
+// Hypothesis:
+// The duplicator node {} in expr will take the value 2.5 and give it to a and b.
+// Then, x will be equal to (a b), or (2.5 2.5)
+
+// Yes!
+
+@main = x
+  & @expr ~ (2.5 x)
+
+@expr = ({a b} (a b))
