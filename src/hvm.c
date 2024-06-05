@@ -344,8 +344,7 @@ static inline Numb operate(Numb a, Numb b) {
   }
 }
 
-// RBag
-// ----
+// RBag ------------------------------------------------------------------------
 
 // FIXME: what about some bound checks?
 
@@ -371,8 +370,7 @@ static inline u32 rbag_len(Net* net, TM* tm) {
   return tm->rput + tm->hput;
 }
 
-// TM
-// --
+// TM --------------------------------------------------------------------------
 
 static TM* tm[TPC];
 
@@ -400,8 +398,7 @@ void free_static_tms() {
   }
 }
 
-// Net
-// ----
+// Net -------------------------------------------------------------------------
 
 // Stores a new node on global.
 static inline void node_create(Net* net, u32 loc, Pair val) {
@@ -454,8 +451,7 @@ static inline Port vars_take(Net* net, u32 var) {
 }
 
 
-// Net
-// ---
+// Net -------------------------------------------------------------------------
 
 // Initializes a net.
 static inline void net_init(Net* net) {
@@ -464,8 +460,7 @@ static inline void net_init(Net* net) {
   atomic_store(&net->idle, 0);
 }
 
-// Allocator
-// ---------
+// Allocator -------------------------------------------------------------------
 
 u32 node_alloc_1(Net* net, TM* tm, u32* lps) {
   while (TRUE) {
@@ -533,8 +528,7 @@ static inline bool get_resources(Net* net, TM* tm, u8 need_rbag, u8 need_node, u
   return got_rbag >= need_rbag && got_node >= need_node && got_vars >= need_vars;
 }
 
-// Linking
-// -------
+// Linking ---------------------------------------------------------------------
 
 // Peeks a variable's final target without modifying it.
 static inline Port peek(Net* net, Port var) {
@@ -607,8 +601,7 @@ static inline void link_pair(Net* net, TM* tm, Pair AB) {
   link(net, tm, get_fst(AB), get_snd(AB));
 }
 
-// Interactions
-// ------------
+// Interactions ----------------------------------------------------------------
 
 // The Link Interaction.
 static inline bool interact_link(Net* net, TM* tm, Port a, Port b) {
@@ -842,6 +835,7 @@ static inline bool interact_swit(Net* net, TM* tm, Port a, Port b) {
 
 // Pops a local redex and performs a single interaction.
 static inline bool interact(Net* net, TM* tm, Book* book) {
+    printf("interact:\n");
   // Pops a redex.
   Pair redex = pop_redex(net, tm);
 
@@ -851,10 +845,18 @@ static inline bool interact(Net* net, TM* tm, Book* book) {
     Port a = get_fst(redex);
     Port b = get_snd(redex);
 
-    // pretty_print_port(net,book,a);
+    printf("  port a = ");
+    pretty_print_port(net, book, a);
+    printf("\n");
+    printf("  port b = ");
+    pretty_print_port(net, book, b);
+    printf("\n");
 
     // Gets the rule type.
     Rule rule = get_rule(a, b);
+    printf("  executing rule: ");
+    pretty_print_rule(rule);
+    printf("\n");
 
     // Used for root redex.
     if (get_tag(a) == REF && b == ROOT) {
@@ -1795,3 +1797,69 @@ int main() {
   return 0;
 }
 #endif
+
+// Custom Utils ----------------------------------------------------------------
+
+void pretty_print_rule(Rule r) {
+  switch (r) {
+    case LINK:
+      printf("LINK");
+      break;
+    case CALL:
+      printf("CALL");
+      break;
+    case VOID:
+      printf("VOID");
+      break;
+    case ERAS:
+      printf("ERAS");
+      break;
+    case ANNI:
+      printf("ANNI");
+      break;
+    case COMM:
+      printf("COMM");
+      break;
+    case OPER:
+      printf("OPER");
+      break;
+    case SWIT:
+      printf("SWIT");
+      break;
+    default:
+      printf("RULE_UNKNOWN");
+      break;
+  }
+}
+
+void pretty_print_tag(Tag t) {
+  switch (t) {
+    case VAR:
+      printf("VAR");
+      break;
+    case REF:
+      printf("REF");
+      break;
+    case ERA:
+      printf("ERA");
+      break;
+    case NUM:
+      printf("NUM");
+      break;
+    case CON:
+      printf("CON");
+      break;
+    case DUP:
+      printf("DUP");
+      break;
+    case OPR:
+      printf("OPR");
+      break;
+    case SWI:
+      printf("SWI");
+      break;
+    default:
+      printf("TAG_UNKNOWN");
+      break;
+  }
+}

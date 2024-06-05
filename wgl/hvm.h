@@ -196,3 +196,8 @@ typedef struct Str {
 // Main ------------------------------------------------------------------------
 
 void hvm_c(u32* book_buffer);
+
+// Custom Utils ----------------------------------------------------------------
+
+void pretty_print_rule(Rule r);
+void pretty_print_tag(Tag t);
