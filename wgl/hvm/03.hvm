@@ -1,0 +1,15 @@
+// Operators: I just wanna do math
+// AH! The syntax just feels inside-out.
+// y = x + 3 is written x ~ $([+3] y)
+
+// And z = x + y is written x ~ $([+] $(y z))
+
+@main = x
+  // & @sum1 ~ (4 x)
+  & @sum2 ~ (2 (3 x))
+
+@sum1 = (x out)
+  & x ~ $([+3] out)
+
+@sum2 = (x (y out))
+  & x ~ $([+] $(y out))
